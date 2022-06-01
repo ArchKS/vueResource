@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>01_vue</title>
+</head>
+
+<body>
+    <div id="root">
+        <div>
+            <p>{{name}} : {{age}}</p>
+        </div>
+    </div>
+</body>
+
+</html>
+
+
+<script>
+    // 1. 获取模板
+    let tmpNode = document.querySelector("#root");
+    // 2. 获取数据
+    let data = {
+        name: '张三',
+        age: 18
+    }
+    // 3. 数据放到模板中
+    // 在真正的 Vue 源码中是 DOM -> 字符串模板 -> VNode -> 真正的 DOM
+    function complier(template, data) {
+        console.log(template);
+        let childNodes = template.childNodes;
+
+        for (let i = 0; i < childNodes.length; i++) {
+            let type = childNodes[i].nodeType;
+
+            if (type === 3) {
+                // 文本节点
+                let txt = childNodes[i].nodeValue;
+                txt = txt.replace(/\{\{(.+?)\}\}/g, (_, g) => {
+                    let key = g.trim();
+                    let value = data[key];
+                    return value;
+                });
+                childNodes[i].nodeValue = txt;
+            } else if (type === 1) {
+                // 元素节点
+                complier(childNodes[i], data);
+            }
+        }
+    }
+
+    // 4. 用模板生成一个需要被渲染的html标签
+    let generatorNode = root.cloneNode(true);
+
+    complier(generatorNode, data);
+
+    // 5. 用html替换模板节点
+    root.parentNode.replaceChild(generatorNode, root);
+
+
+
+    // 上面的思路有很大的问题:
+    // 1. Vue 使用的 虚拟 DOM
+    // 2. 只考虑了 单属性 ( {{ name }} ), 而 Vue 中大量的使用层级 ( {{ child.name.firstName }} )
+    // 3. 代码没有整合
+
+</script>

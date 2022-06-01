@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>01_vue</title>
+</head>
+
+<body>
+    <div id="root">
+        <div>
+            <p>{{area.school.person.name}} : {{age}}</p>
+        </div>
+    </div>
+</body>
+
+</html>
+
+
+<script>
+
+
+    // 1. 获取模板
+    // 2. 获取数据
+    // 3. 将模板渲染成html
+    // 4. 将页面中的html替换
+    class ZVue {
+        constructor(option) {
+            this.$el = document.querySelector(option.el); // 模板
+            this._data = option.data;
+            this._template = this.$el.cloneNode(true); // 克隆模板，会被构造成html，替换原来的html
+            this.complier(this._template); // 3
+            this.$el.parentNode.replaceChild(this._template, document.querySelector(option.el)); // 4
+            console.log(this.$el);
+        }
+
+        complier(tmpNode) {
+            let childNodes = tmpNode.childNodes;
+            for (let i = 0; i < childNodes.length; i++) {
+                let type = childNodes[i].nodeType;
+                if (type === 3) {
+                    // 文本节点
+                    let txt = childNodes[i].nodeValue;
+                    txt = txt.replace(/\{\{(.+?)\}\}/g, (_, g) => {
+                        // 支持层级： location.info.name
+                        let key = g.trim();
+                        let value;
+                        if (key.indexOf('.') > -1) { // 是多层级
+                            value = this.mutDict(key.split('.'), this._data);
+                        } else {
+                            value = this._data[key];
+                        }
+                        return value;
+                    });
+                    childNodes[i].nodeValue = txt;
+                } else if (type === 1) {
+                    // 元素节点
+                    this.complier(childNodes[i]);
+                }
+            }
+        }
+
+        mutDict(levelList, obj) {
+            // let revList = '.' + levelList.join('.');
+
+
+
+            let topObj = obj;
+            while (levelList.length != 0) {
+                topObj = topObj[levelList.shift()];
+            }
+            return topObj;
+        }
+
+    }
+
+
+    new ZVue({
+        el: '#root',
+        data: {
+            area: {
+                school: {
+                    person: {
+                        name: "Cool"
+                    }
+                }
+            },
+            age: 20
+        }
+    });
+
+</script>
